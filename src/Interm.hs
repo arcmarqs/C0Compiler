@@ -148,40 +148,6 @@ transStm tabl (If cond stm)
        code1 <- transStm table stm
        return (code0 ++ [LABEL ltrue] ++ code1 ++ [LABEL lfalse])
 
-{-transStm tabl (IfElse cond (Block stm1) (Block stm2))
-  = do ltrue <- newLabel
-       lfalse <- newLabel
-       lend <- newLabel
-       code0 <- transCond tabl cond ltrue lfalse
-       table1 <- getDecl tabl (Block stm1)
-       code1 <- transStm table1 (Block stm1)
-       table2 <- getDecl tabl (Block stm2)
-       code2 <- transStm table2 (Block stm2)
-       return (code0 ++ [LABEL ltrue] ++ code1 ++ [JUMP lend, LABEL lfalse] ++ code2 ++ [LABEL lend])
-
-transStm tabl (IfElse cond (Block stm1) stm2)
-  = do ltrue <- newLabel
-       lfalse <- newLabel
-       lend <- newLabel
-       code0 <- transCond tabl cond ltrue lfalse
-       table1 <- getDecl tabl (Block stm1)
-       code1 <- transStm table1 (Block stm1)
-       table2 <- getDecl tabl (Block [stm2])
-       code2 <- transStm table2 stm2
-       return (code0 ++ [LABEL ltrue] ++ code1 ++ [JUMP lend, LABEL lfalse] ++ code2 ++ [LABEL lend])
-
-transStm tabl (IfElse cond stm1 (Block stm2))
-  = do ltrue <- newLabel
-       lfalse <- newLabel
-       lend <- newLabel
-       code0 <- transCond tabl cond ltrue lfalse
-       table1 <- getDecl tabl (Block [stm1])
-       code1 <- transStm table1 stm1
-       table2 <- getDecl tabl (Block stm2)
-       code2 <- transStm table2 (Block stm2)
-       return (code0 ++ [LABEL ltrue] ++ code1 ++ [JUMP lend, LABEL lfalse] ++ code2 ++ [LABEL lend])
--}
-
 transStm tabl (IfElse cond stm1 stm2)
    = do ltrue <- newLabel
         lfalse <- newLabel
@@ -192,22 +158,6 @@ transStm tabl (IfElse cond stm1 stm2)
         table2 <- getDecl tabl (Block [stm2])
         code2 <- transStm table2 stm2
         return (code0 ++ [LABEL ltrue] ++ code1 ++ [JUMP lend, LABEL lfalse] ++ code2 ++ [LABEL lend])
-
-{-}
-transStm tabl (For decl cond op (Block stms))
-  = do ltrue <- newLabel
-       lloop <- newLabel
-       lend <- newLabel
-       lcond <- newLabel
-       (code0,tabl') <- transOpFor tabl decl
-       code1 <- transCond tabl' cond ltrue lend
-       code2 <- transOp tabl' op
-       tabl1 <- getDecl tabl' (Block stms)
-       code3 <- transStm tabl1 (Block stms)
-       return (code0 ++ [LABEL lloop] ++
-               code1 ++ [LABEL ltrue] ++ code3 ++ code2 ++
-              [JUMP lloop, LABEL lend]) 
--}
 
 transStm tabl (For decl cond op stm)
   = do ltrue <- newLabel
@@ -222,17 +172,6 @@ transStm tabl (For decl cond op stm)
        return (code0 ++ [LABEL lloop] ++
                code1 ++ [LABEL ltrue] ++ code3 ++ code2 ++
                [JUMP lloop, LABEL lend])
-{-}
-transStm tabl (While cond (Block stms))
-  = do ltrue <- newLabel
-       lloop <- newLabel
-       lend <- newLabel
-       code1 <- transCond tabl cond ltrue lend
-       table <- getDecl tabl (Block stms)
-       code2 <- transStm table (Block stms)
-       return ([LABEL lloop] ++ code1 ++
-               [LABEL ltrue] ++ code2 ++
-               [JUMP lloop, LABEL lend]) -}
 
 transStm tabl (While cond stm)
   = do ltrue <- newLabel
@@ -386,7 +325,3 @@ transOp tabl (PostDecr name)
   = case Map.lookup name tabl of
       Just temp -> return ([OPI Minus temp temp 1])
       Nothing -> error "variable not defined"
-
--- transCond tabl (FuncCallExpC func exp) labelf
- --  = do (code1,temps) <- transExps tabl exp
-  --     return (code1 ++ [CALL func (temps)])
